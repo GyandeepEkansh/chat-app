@@ -7,15 +7,15 @@ export const signup = async(req, res) => {
     const { email, fullName, password } = req.body;
   try {
     if(!fullName || !email || !password) {
-      return res.status(400).json({ error: "Please fill all the fields" });
+      return res.status(400).json({ message: "Please fill all the fields", error: "Please fill all the fields" });
     }
     if(password.length < 6) {
-       return res.status(400).json({ error: "Password must be at least 6 characters long" });
+       return res.status(400).json({ message: "Password must be at least 6 characters long", error: "Password must be at least 6 characters long" });
     }
     // hash password
     const user = await User.findOne({ email });
     if (user) {
-       return res.status(400).json({ error: "User already exists" });
+       return res.status(400).json({ message: "User already exists", error: "User already exists" });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -32,12 +32,12 @@ export const signup = async(req, res) => {
       await newUser.save();
       res.status(201).json({ _id: newUser._id, fullName: newUser.fullName, email: newUser.email, profilePic: newUser.profilePic});
     }else {
-       return res.status(400).json({ error: "Invalid user data" });
+       return res.status(400).json({ message: "Invalid user data", error: "Invalid user data" });
     }
 
   } catch (error) {
     console.error("Error during signup:", error.message);
-    return res.status(500).json({ error: "Error during signup" });
+    return res.status(500).json({ message: "Error during signup", error: "Error during signup" });
   }
 };
 
@@ -46,17 +46,17 @@ export const login = async (req, res) => {
   try {
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ error: "Invalid email or password" });
+      return res.status(400).json({ message: "Invalid email or password", error: "Invalid email or password" });
     }
     const isPasswordCorrect= await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) {
-      return res.status(400).json({ error: "Invalid credentials" });
+      return res.status(400).json({ message: "Invalid credentials", error: "Invalid credentials" });
     }
     generateToken(user._id, res);
     res.status(200).json({ _id: user._id, fullName: user.fullName, email: user.email, profilePic: user.profilePic });
   } catch (error) {
     console.error("Error during login:", error.message);
-    return res.status(500).json({ error:"Internal server error" });
+    return res.status(500).json({ message: "Internal server error", error: "Internal server error" });
   }
 };
 
@@ -93,10 +93,9 @@ export const updateProfile = async (req, res) => {
 
 export const checkAuth = (req, res) => {
   try {
-    const user = req.user;
-    res.status(200).json({ user });
+    res.status(200).json(req.user);
   } catch (error) {
     console.log("Error checking authentication:", error.message);
-    return res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
